@@ -99,8 +99,8 @@ function getRequiredMethods(obj, isNot) {
                 return this.returnResult(obj.split(' ').length === count);
             }
         },
-        returnResult: function (condition) {
-            return isNot ? !condition : condition;
+        returnResult: function (res) {
+            return isNot ? !res : res;
         }
     };
 }
