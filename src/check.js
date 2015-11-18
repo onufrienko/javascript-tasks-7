@@ -17,17 +17,31 @@ exports.init = function () {
     });*/
 };
 
+exports.wrap = function (obj) {
+    if (obj === null) {
+        return {
+            get: function () {
+                return null;
+            },
+            isNull: function () {
+                return true;
+            }
+        };
+    }
+    exports.init.bind(obj);
+};
+
 function getMethods(obj) {
-    var res = getRequiredMethods(obj, false);
+    var res = getRequiredMethods(obj);
     Object.defineProperty(res, 'not', {
         get: function () {
-            return getRequiredMethods(obj, true);
+            return !getRequiredMethods(obj);
         }
     });
     return res;
 }
 
-function getRequiredMethods(obj, isNot) {
+function getRequiredMethods(obj) {
     return {
         containsKeys: function (keys) {
             if (Object.getPrototypeOf(obj) === Object.prototype ||
@@ -35,7 +49,7 @@ function getRequiredMethods(obj, isNot) {
                 var ownKeys = keys.filter(function (key) {
                     return obj.hasOwnProperty(key);
                 });
-                return this.returnResult(ownKeys.length === keys.length);
+                return ownKeys.length === keys.length;
             }
         },
         hasKeys: function (keys) {
@@ -46,7 +60,7 @@ function getRequiredMethods(obj, isNot) {
                 });
                 var res = ownKeys.length === keys.length &&
                     ownKeys.length === Object.keys(obj).length;
-                return this.returnResult(res);
+                return res;
             }
         },
         hasValues: function (values) {
@@ -60,7 +74,7 @@ function getRequiredMethods(obj, isNot) {
                 });
                 var res = ownKeys.length === objValues.length &&
                 ownKeys.length === values.length;
-                return this.returnResult(res);
+                return res;
             }
         },
         containsValues: function (values) {
@@ -72,35 +86,33 @@ function getRequiredMethods(obj, isNot) {
                 var ownValues = values.filter(function (value) {
                     return objValues.indexOf(value) != -1;
                 });
-                return this.returnResult(ownValues.length === values.length);
+                return ownValues.length === values.length;
             }
         },
         hasValueType: function (key, type) {
             if (Object.getPrototypeOf(obj) === Array.prototype ||
                 Object.getPrototypeOf(obj) === Object.prototype) {
-                var res = typeof obj[key] === 'function' ?
-                    true : obj[key] == type(obj[key]);
-                return this.returnResult(res);
+                return Object.getPrototypeOf(type()) === Object.getPrototypeOf(obj[key]);
             }
         },
         hasLength: function (length) {
             if (Object.getPrototypeOf(obj) === Array.prototype ||
                 Object.getPrototypeOf(obj) === String.prototype) {
-                return this.returnResult(obj.length === length);
+                return obj.length === length;
             }
         },
         hasParamsCount: function (count) {
             if (Object.getPrototypeOf(obj) === Function.prototype) {
-                return this.returnResult(count === obj.length);
+                return count === obj.length;
             }
         },
         hasWordsCount: function (count) {
             if (Object.getPrototypeOf(obj) === String.prototype) {
-                return this.returnResult(obj.split(' ').length === count);
+                return obj.split(' ').length === count;
             }
         },
-        returnResult: function (res) {
-            return isNot ? !res : res;
+        isNull: function () {
+            return false;
         }
     };
 }
