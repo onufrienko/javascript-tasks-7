@@ -29,6 +29,7 @@ exports.wrap = function (obj) {
         };
     }
     exports.init.bind(obj);
+    return obj;
 };
 
 function getMethods(obj) {
